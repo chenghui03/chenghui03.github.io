@@ -1,5 +1,5 @@
 ---
-{"publish":true,"created":"2025-10-18T16:19:24.732+08:00","modified":"2025-10-18T17:16:44.943+08:00","cssclasses":""}
+{"publish":true,"created":"2025-10-18T16:19:24.732+08:00","modified":"2025-10-30T22:40:22.000+08:00","cssclasses":""}
 ---
 
 ## Motivation
@@ -8,6 +8,7 @@
 1. 预测结果 $\hat{y}$ 没有限制，可能小于0或大于1，无法解释为概率
 2. 平方损失函数不适合分类问题(非凸)
 ## Model
+
 
 | 符号      | 含义                       |
 | ------- | ------------------------ |
@@ -18,17 +19,17 @@
 
 注意区分i，j
 $$
-\begin{align}
+\begin{align*}
 \text{for sample } i, \,
 \hat y_j = \vec{\omega}^T_j \vec{x_j} + b \\
 p_j = \frac{e^{\hat{y}_j}}{\sum_i e^{\hat y_j}} \\
 l_i = -\sum_j y_j \log p_j \\
-\end{align}
+\end{align*}
 $$
 ## 梯度下降求解
 
 $$
-\begin{align}
+\begin{align*}
 l_i &= -\sum_j y_j \log p_j \\ 
 &= -\sum_j (y_j \log \frac{e^{\hat{y}_j}}{\sum_i e^{\hat y_j}}) \\
 &= - \sum_j y_j \hat{y}_j + \sum_j y_j \log \sum_i e^{\hat{y}_i}\\
@@ -36,9 +37,9 @@ l_i &= -\sum_j y_j \log p_j \\
 \therefore 
 \frac{\partial l_i}{\partial \hat{y}_i} &= -y_j + p_j\\
 ... \\
-\frac{\partial l_i}{\partial \omega_j} &= \vec{x}_i(-y_j + p_j) \\
+\frac{\partial l_i}{\partial \vec\omega_j} &= \vec{x}_i(-y_j + p_j) \\
 \frac{\partial l_i}{\partial b_j} &= -y_j + p_j
-\end{align}
+\end{align*}
 $$
 
 ## 实现
