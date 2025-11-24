@@ -1,5 +1,5 @@
 ---
-{"publish":true,"created":"2025-11-23T22:54:18.000+08:00","modified":"2025-11-24T22:18:00.467+08:00","cssclasses":""}
+{"publish":true,"created":"2025-11-24T22:18:02.000+08:00","modified":"2025-11-24T22:52:34.686+08:00","cssclasses":""}
 ---
 
 
@@ -34,8 +34,8 @@ $$
 $$
 
 > [!INFO]  
-加法噪声不会改变测量值的方差，而真实数据的主要漂移来自乘法噪声。  
-正是这类乘性波动，使得方差随均值增长成为普遍现象。
+> 加法噪声不会改变测量值的方差，而真实数据的主要漂移来自乘法噪声。  
+> 正是这类乘性波动，使得方差随均值增长成为普遍现象。
 
 #### 生物信号形成过程中的乘性步骤
 
@@ -74,6 +74,7 @@ $$
 
 
 ![[Pasted image 20251124213309.png]]
+
 从图上可以看出当存在mean variance dependence$$Var(X) = 1.5 \times \mu^2$$
 此时t统计量将会发生明显偏移（包括中心向右偏移，更加集中）。可以看到此时进行假设检验t统计量大部分（浅蓝色，mean-var dependence）都会落入两端（浅绿色，no dependence）会导致大部分假设检验都是假阳性：此时假设检验完全失效。
 
@@ -169,69 +170,6 @@ glog作为log foldchange的估计，他比直接使用log相减有更小的方�
 mean variance dependence下t统计量的分布发生变化
 
 ```python
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.stats import t
-from typing import Tuple
-
-# Simulation parameters
-n = 20
-mu1 = 1.0
-mu2 = mu1 + 5  # null
-
-# variance–mean dependence exponent
-k = 2.0
-d = 2.0   
-n_sim = 20000
-rng = np.random.default_rng(42)
-
-def sample_group(mu: float, n: int, k: float, d: float) -> np.ndarray:
-    var = k * (mu ** d)
-    sd = np.sqrt(var)
-    return rng.normal(mu, sd, n)
-
-def t_two_sample(x: np.ndarray, y: np.ndarray) -> float:
-    nx = len(x)
-    ny = len(y)
-    mean_diff = x.mean() - y.mean()
-    vx = x.var(ddof=1)
-    vy = y.var(ddof=1)
-    se = np.sqrt(vx/nx + vy/ny)
-    return mean_diff / se
-
-ts = []
-ts2 = []
-for _ in range(n_sim):
-    x = sample_group(mu1, n, k, d)
-    y = sample_group(mu2, n, k, d)
-    y2 = rng.normal(mu2, k * (mu1 ** d), n)
-    ts.append(t_two_sample(x, y))
-    ts2.append(t_two_sample(x, y2))
-
-ts = np.array(ts)
-
-# Plot empirical distribution vs theoretical t-distribution
-plt.figure(figsize=(6, 4))
-bins = 60 * 2
-
-# Lancet palette approximate
-color_emp1 = "#4C72B0"
-color_emp2 = "#55A868"
-color_the = "#DD8452"
-
-plt.hist(ts, bins=bins, density=True, alpha=0.65, 
-         color=color_emp1, label="Empirical(mean-var dependence)")
-plt.hist(ts2, bins=bins, density=True, alpha=0.65, 
-         color=color_emp2, label="Empirical(no dependence)")
-
-xs = np.linspace(-6, 6, 400)
-plt.plot(xs, t(df=2*n-2).pdf(xs), color=color_the, linewidth=2.2, label="t(df)")
-
-plt.xlabel("t statistic")
-plt.ylabel("Density")
-plt.legend()
-plt.tight_layout()
-plt.show()
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import t
