@@ -1,16 +1,22 @@
 ---
-{"publish":true,"created":"2025-11-24T23:05:46.000+08:00","modified":"2025-11-24T23:05:46.000+08:00","cssclasses":""}
+{"publish":true,"created":"2025-11-24T23:05:46.000+08:00","modified":"2025-11-28T17:12:12.928+08:00","cssclasses":""}
 ---
 
 
 ## abstract
 
 TODO
+
+## 寻找Highly variable genes
+
+方差大的gene
+
 ## 现象：mean–variance dependence
 
 高通量测量（RNA、蛋白质、代谢物）里，一个无处不在的规律是：  **测量值越大，方差也越大。**
 
 bulk RNA-seq 数据集 mean-variance散点图
+
 ![](https://i.postimg.cc/ThMxLFWC/Screenshot-2020-12-22-at-11-19-49.png)
 
 ### 从测量值的形成过程考察原因

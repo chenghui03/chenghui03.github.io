@@ -1,5 +1,5 @@
 ---
-{"publish":true,"created":"2025-11-26T10:43:23.383+08:00","modified":"2025-11-27T20:58:54.749+08:00","cssclasses":""}
+{"publish":true,"created":"2025-11-26T10:43:23.383+08:00","modified":"2025-11-29T19:09:35.981+08:00","cssclasses":""}
 ---
 
 # kmeans
@@ -139,9 +139,16 @@ $$
 q_{i,j} = \frac{1 + ||y_{i} - y_{j}||^{-2}}{\sum}
 $$
 最小化二者分布的KL散度
+$$
+KL(P||Q) = \sum_{i,j}  p_{i,j}\log \frac{p_{i,j}}{q_{i,j}}
+$$
+
+> [!NOTE] 为什么tSNE全局结构不可信
+> 在上面的损失式子中，只有 ‘让相邻的点保持类似相邻的信息’ 而对于互相远离的点 $1-p_{i,j}$ 这个损失并没有告诉应该怎样做（没有被考虑）
 
 ## 结果
 
+### 高斯噪声blob
 PCA聚类结果
 ![[Pasted image 20251127205811.png]]
 
@@ -166,6 +173,18 @@ iter 1400, KL = 3.4047
 iter 1500, KL = 3.4067
 iter 1600, KL = 3.4088
 ```
+
+### swiss roll
+
+![[Pasted image 20251127211121.png]]
+
+tsne result
+![[Pasted image 20251127211236.png]]
+可以看到全局图形变得和swiss roll完全没关系了（全局结构被扭曲）
+
+PCA
+![[Pasted image 20251127211249.png]]
+选择的是swiss roll的纵切面的两个方向（方差最大方向）
 
 为什么必须先做PCA
 计算复杂度较高，PCA50可以保留足够信息同时减小计算量。
@@ -329,9 +348,85 @@ def tsne_from_scratch(
 ```
 
 
+swiss roll对比
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_swiss_roll
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
+
+# Generate Swiss roll
+X, t = make_swiss_roll(n_samples=1500, noise=0.05, random_state=42)
+
+# 3D visualization
+fig = plt.figure(figsize=(8, 7))
+ax = fig.add_subplot(111, projection='3d')
+
+p = ax.scatter(X[:, 0], X[:, 1], X[:, 2], c=t, cmap='Spectral', s=8)
+
+ax.set_title("True 3D Swiss Roll Geometry")
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
+ax.set_zlabel("Z")
+
+fig.colorbar(p, label="Intrinsic parameter t")
+plt.show()
+```
+
+
+```python
+X = X.astype(np.float64)
+
+Y_tsne = tsne_from_scratch(
+    X,
+    n_components=2,
+    perplexity=40.0,
+    n_iter=800,
+    pca_dims=50,
+    random_state=0,
+    verbose=True,
+)
+
+plt.figure(figsize=(7, 7))
+plt.scatter(Y_tsne[:, 0], Y_tsne[:, 1], c=t, cmap="Spectral", s=5)
+plt.gca().set_aspect("equal", "box")
+plt.title("t-SNE from scratch on Swiss Roll")
+plt.colorbar(label="Intrinsic parameter t")
+plt.show()
+
+from sklearn.decomposition import PCA
+X_pca2 = PCA(n_components=2).fit_transform(X)
+
+plt.figure(figsize=(7, 7))
+plt.scatter(X_pca2[:, 0], X_pca2[:, 1], c=t, cmap="Spectral", s=5)
+plt.gca().set_aspect("equal", "box")
+plt.title("PCA on Swiss Roll (fails to unwrap the manifold)")
+plt.colorbar(label="Intrinsic parameter t")
+plt.show()
+```
 # UMAP
-	怎么做的
-	为什么比tSNE更适合保留全局结构，更适合trajectory，n neighbor的含义（如何反应全局/局部平衡）
+
+## motivation
+
+保留局部结构
+	每个点周围有着相同数量的邻居
+	距离点更远点的临界信息不可信
+保留一定的全局结构
+使用KNN定义邻居（超参数`n_neighbor`）
+定义邻居之间连接强度（0-1）（其中最近邻居连接强度为1）
+$$
+\exp -\left( \frac{d_{i,j}- \min(\{ d_{i,j} \})}{\sigma_{i}} \right)
+$$
+重新生成随机点，定义他们之间的距离
+$$
+q_{i,j} = \frac{1}{||y_{i} - y_{j}||^k + a}
+$$
+最小化Cross Entropy loss
+$$
+CE = p_{i,j} \log q_{i,j} + (1-p_{i,j}) \log q_{i,j}
+$$
+
+为什么比tSNE更适合保留全局结构，更适合trajectory，的含义（如何反应全局/局部平衡）
 
 
 leiden是什么？如何利用降维信息的？
@@ -345,3 +440,204 @@ leiden是什么？如何利用降维信息的？
 | t-SNE   | ✗         | ✓ 强调局部邻域 | 全局形状不可信   |
 | UMAP    | 中等        | ✓        |           |
 | Leiden  | 图结构完全决定   | ✓        |           |
+## 结果
+
+swiss roll
+![[Pasted image 20251129190920.png]]
+## 实现
+
+```python
+import numpy as np
+from sklearn.decomposition import PCA
+
+
+# --- Utility: pairwise squared distances (same as in t-SNE code) ---
+def _pairwise_dist_sq(X):
+    sum_X = np.sum(X ** 2, axis=1)
+    D = np.add.outer(sum_X, sum_X) - 2 * (X @ X.T)
+    D[D < 0] = 0
+    return D
+
+
+# --- Step 1: Compute kNN graph ---
+def _knn_indices_and_dists(X, n_neighbors):
+    """
+    Return:
+        indices: (n, k)   neighbor indices
+        dists  : (n, k)   distances
+    """
+    D = _pairwise_dist_sq(X)
+    idx = np.argsort(D, axis=1)[:, 1:n_neighbors+1]
+    d = np.take_along_axis(D, idx, axis=1)
+    return idx, np.sqrt(d)
+
+
+# --- Step 2: Compute sigma_i, rho_i for each point ---
+def _smooth_knn_dist(dists, local_connectivity=1, tol=1e-5):
+    """
+    Solve for sigma_i s.t.
+        sum_j exp(-(d_ij - rho_i)/sigma_i) = log2(k)
+    """
+    n, k = dists.shape
+    sigmas  = np.zeros(n)
+    rhos    = np.zeros(n)
+
+    target = np.log2(k)
+
+    for i in range(n):
+        di = dists[i]
+
+        # rho_i = distance to the local_connectivity-th neighbor
+        rhos[i] = di[local_connectivity - 1]
+
+        lo, hi = 1e-3, 1e3
+        for _ in range(50):
+            mid = 0.5 * (lo + hi)
+            psum = np.sum(np.exp(-(di - rhos[i]) / mid))
+            if abs(psum - target) < tol:
+                break
+            if psum > target:
+                lo = mid
+            else:
+                hi = mid
+
+        sigmas[i] = mid
+
+    return sigmas, rhos
+
+
+# --- Step 3: Construct fuzzy simplicial complex (P matrix) ---
+def _compute_fuzzy_membership(n, knn_idx, knn_dist, sigmas, rhos):
+    rows = []
+    cols = []
+    vals = []
+
+    for i in range(n):
+        for j_idx in range(knn_idx.shape[1]):
+            j = knn_idx[i, j_idx]
+            dij = knn_dist[i, j_idx]
+
+            if dij - rhos[i] <= 0:
+                weight = 1.0
+            else:
+                weight = np.exp(-(dij - rhos[i]) / sigmas[i])
+
+            rows.append(i)
+            cols.append(j)
+            vals.append(weight)
+
+    P = np.zeros((n, n))
+    P[rows, cols] = vals
+
+    # fuzzy union
+    P = P + P.T - P * P.T
+    P = np.clip(P, 1e-12, 1.0)
+    return P
+
+
+# --- Step 4: Low-dimensional kernel q_ij ---
+def _umap_low_dim_affinity(Y, a=1.577, b=0.895):
+    n = Y.shape[0]
+    sum_Y = np.sum(Y ** 2, axis=1)
+    dist2 = np.add.outer(sum_Y, sum_Y) - 2 * (Y @ Y.T)
+    dist2 = np.maximum(dist2, 0)
+
+    Q = 1 / (1 + a * (dist2 ** b))
+    np.fill_diagonal(Q, 0.0)
+    Q = np.maximum(Q, 1e-12)
+    return Q
+
+
+# --- Step 5: Optimize cross-entropy ---
+def umap_from_scratch(
+    X,
+    n_components=2,
+    n_neighbors=15,
+    n_epochs=500,
+    learning_rate=1.0,
+    pca_dims=50,
+    random_state=0,
+    verbose=True,
+):
+    """
+    Minimal UMAP implementation.
+    """
+
+    rng = np.random.RandomState(random_state)
+    n, d = X.shape
+
+    # --- PCA pre-processing ---
+    if pca_dims < d:
+        X_hd = PCA(n_components=pca_dims, random_state=random_state).fit_transform(X)
+    else:
+        X_hd = X
+
+    # --- Step 1: kNN graph ---
+    knn_idx, knn_dist = _knn_indices_and_dists(X_hd, n_neighbors)
+
+    # --- Step 2: compute sigma_i, rho_i ---
+    sigmas, rhos = _smooth_knn_dist(knn_dist)
+
+    # --- Step 3: fuzzy complex P ---
+    P = _compute_fuzzy_membership(n, knn_idx, knn_dist, sigmas, rhos)
+
+    # --- Step 4: Initialize Y using PCA ---
+    Y = PCA(n_components=n_components, random_state=random_state).fit_transform(X_hd)
+    Y = Y / np.std(Y[:, 0])
+    Y -= Y.mean(axis=0)
+
+    # constants for low-dimensional kernel
+    a, b = 1.577, 0.895
+
+    # --- Step 5: gradient descent on cross-entropy ---
+    for epoch in range(n_epochs):
+        Q = _umap_low_dim_affinity(Y, a=a, b=b)
+
+        # cross entropy gradient:
+        # dL/dy_i = sum_j [ p_ij * d(-log q_ij)/dy_i  + (1-p_ij) * d(log(1-q_ij))/dy_i ]
+        # Simplified implementation:
+
+        positive = P * Q * (a * b)  # attraction
+        negative = (1 - P) * (1 - Q) * (a * b)  # repulsion
+
+        grad = np.zeros_like(Y)
+
+        # Compute direction vector for each pair
+        sum_Y = np.sum(Y ** 2, axis=1)
+        dist2 = np.add.outer(sum_Y, sum_Y) - 2 * (Y @ Y.T)
+        dist2 = np.maximum(dist2, 1e-7)
+        dist = np.sqrt(dist2)
+
+        dir_vec = (Y[:, None, :] - Y[None, :, :]) / dist[:, :, None]
+
+        grad += np.sum((positive - negative)[:, :, None] * dir_vec, axis=1)
+
+        Y -= learning_rate * grad
+        Y -= Y.mean(axis=0)
+
+        if verbose and (epoch + 1) % 100 == 0:
+            print(f"Epoch {epoch+1}/{n_epochs}")
+
+    return Y
+
+from sklearn.datasets import make_swiss_roll
+import matplotlib.pyplot as plt
+
+X, t = make_swiss_roll(n_samples=1500, noise=0.05, random_state=42)
+
+Y_umap = umap_from_scratch(
+    X,
+    n_components=2,
+    n_neighbors=30,
+    n_epochs=400,
+    pca_dims=30,
+    random_state=0,
+)
+
+plt.figure(figsize=(7,7))
+plt.scatter(Y_umap[:,0], Y_umap[:,1], c=t, cmap="Spectral", s=5)
+plt.title("UMAP from scratch")
+plt.gca().set_aspect("equal", "box")
+plt.show()
+
+```
