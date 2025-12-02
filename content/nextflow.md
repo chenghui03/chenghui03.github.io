@@ -1,5 +1,5 @@
 ---
-{"publish":true,"created":"2025-11-25T15:54:17.000+08:00","modified":"2025-11-25T15:54:17.000+08:00","cssclasses":""}
+{"publish":true,"created":"2025-10-06T19:26:35.000+08:00","modified":"2025-12-02T20:04:38.982+08:00","cssclasses":""}
 ---
 
 ## 动机
@@ -57,7 +57,7 @@ Nextflow 会在执行前根据 DSL2 的声明式语法解析 workflow，构建�
 
 
 
-## 从头实现
+## 最小实现
 
 ```python
 # nextflow_minimal.py
@@ -136,21 +136,28 @@ for i in range(5):
 
 ## 使用
 
-### 2语法
+### DSL2语法
 
-|关键字|用途|
-|---|---|
-|`tag`|设置任务标签|
-|`val`|传递普通数据（数字、字符串、tuple）|
-|`path`|传递文件（自动 staging）|
-|`script`|Shell 执行块|
-|`include`|引入 module 或 subworkflow|
-|`take`|声明 subworkflow 输入|
-|`main`|subworkflow 主逻辑|
-|`emit`|声明 subworkflow 输出|
-|`Channel.fromPath`|由文件路径构建 channel|
-|`map`|channel 变换|
-|`view`|调试输出|
+| 关键字                | 用途                      |
+| ------------------ | ----------------------- |
+| `tag`              | 设置任务标签                  |
+| `val`              | 传递普通数据（数字、字符串、tuple）    |
+| `path`             | 传递文件（自动 staging）        |
+| `script`           | Shell 执行块               |
+| `include`          | 引入 module 或 subworkflow |
+| `take`             | 声明 subworkflow 输入       |
+| `main`             | subworkflow 主逻辑         |
+| `emit`             | 声明 subworkflow 输出       |
+| `Channel.fromPath` | 由文件路径构建 channel         |
+| `map`              | channel 变换              |
+| `view`             | 调试输出                    |
+
+变量名
+
+|            |     |
+| ---------- | --- |
+| $task.cpus |     |
+
 ### 项目结构示例
 
 ```bash
@@ -251,6 +258,38 @@ nextflow run . \
 ```
 
 ## 其他
+
+组织项目结构
+
+```bash
+my-pipeline/
+├── main.nf               # 顶层执行图
+├── nextflow.config       # 全局参数
+│
+├── conf/                 # HPC 配置、profile
+│   ├── slurm.config
+│   └── test.config
+│
+├── modules/              # 最小任务单元
+│   ├── nf-core/
+│   └── local/
+│       └── custom_step.nf
+│
+├── subworkflows/         # 模块组合
+│   ├── qc.nf
+│   ├── align.nf
+│   └── quantify.nf
+│
+├── bin/                  # 自定义脚本
+│   └── helper.py
+│
+├── assets/
+│   └── multiqc_config.yaml
+│
+└── tests/                # CI
+```
+
+参考 https://github.com/nf-core/rnaseq
 
 nextflow config settings
 https://www.nextflow.io/docs/latest/reference/config.html#config-options
