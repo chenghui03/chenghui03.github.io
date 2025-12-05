@@ -1,18 +1,16 @@
 ---
-{"publish":true,"created":"2025-12-03T18:49:51.537+08:00","modified":"2025-12-03T19:05:57.056+08:00","cssclasses":""}
+{"publish":true,"created":"2025-12-03T21:58:34.000+08:00","modified":"2025-12-05T20:42:47.354+08:00","cssclasses":""}
 ---
 
-在生物信息学分析中，我们面临的核心挑战并非单纯的生物学问题，而是大规模、高并发、异构环境下的分布式计算问题。
+在生物信息学分析中，除了生物学, 大规模、高并发、不同环境下的分布式计算也是一大难题。
 
-当我们谈论 Pipeline 时，多数研究者倾向于将其视为一系列按顺序执行的脚本（Control Flow）。然而，这种命令式的思维在处理复杂依赖、并行调度和环境复现时显得捉襟见肘。Nextflow 的核心价值在于，它引入了 Dataflow Programming（数据流编程） 的思想，将业务逻辑与底层执行彻底解耦。它不仅仅是一个流程运行器，更像是一个针对分布式运算的编译器。
-
-本文旨在从工程角度拆解 Nextflow 的设计哲学、核心抽象、调度机制以及 DSL2 的模块化演进。
+ 多数研究者倾向于将Pipeline视为一系列按顺序执行的脚本（Control Flow）。然而，这种命令式的思维在处理复杂依赖、并行调度和环境复现时显得捉襟见肘。Nextflow 引入了 Dataflow Programming（数据流编程） 的思想，将业务逻辑与底层执行解耦。它不仅仅是一个流程运行器，更像是一个针对分布式运算的编译器。
 
 ---
 
 ## Pipeline 的第一性原理
 
-从计算科学的角度审视，每一个生信任务（Task）都可以被抽象为以下五要素的集合：
+从计算科学的角度审视，每一个（Task）都可以被抽象为以下五要素的集合：
 
 $$Task = Container + Command + Resources + Input + Output$$
 
@@ -27,7 +25,7 @@ $$Task = Container + Command + Resources + Input + Output$$
 | Bazel     | Target           | 静态依赖图<br>(沙盒化构建)                       | 软件编译，确定性构建         | 对动态输入（如不确定的数据量）支持较差，不适合探索性分析。          |
 | Makefile  | Target           | 文件时间戳 DAG                              | 简单自动化              | 缺乏对容器、集群资源和并发的原生支持。                    |
 
-Nextflow 的核心观点是：Pipeline 是一个数据流动的有向图，而非指令序列。
+Nextflow 的核心观点是：Pipeline 是一个数据流动的有向图。
 
 ## Dataflow Programming 与隐式并行
 
@@ -50,7 +48,6 @@ Channel 是连接 Process 的通道，其本质是一个具备背压（Backpress
 - 它只负责传输数据，不存储持久化状态。
 - 支持多路复用：可以被多个 Process 订阅（分流），也可以由多个 Process 写入（汇流）。
     
-
 ### Process
 
 Process 是执行计算的原子单元。
@@ -82,7 +79,6 @@ Nextflow 早期的 DSL1 将所有逻辑耦合在单一文件中，难以复用�
 2. Subworkflow：将多个 Module 串联成一个功能单元（例如 `FASTQC -> TRIMMING -> ALIGNMENT`）。
 3. Workflow：顶层的业务逻辑编排。
     
-
 这种分层使得 nf-core 等社区项目能够构建可复用的标准库：
 
 ```
@@ -204,14 +200,15 @@ profiles {
   
   // HPC 生产环境
   slurm_prod {
+	// default setting for all task
     process {
         executor = 'slurm'
         queue = 'general'
-        // 动态资源分配：失败后自动增加内存重试
+        // try memory setting
         memory = { 4.GB * task.attempt } 
         errorStrategy = 'retry'
     }
-    // 特殊任务：在登录节点执行下载，避免排队
+    // 特殊任务：在与网络连接的登录节点执行下载
     process {
         withName: 'DOWNLOAD_.*' {
             executor = 'local'
@@ -223,6 +220,9 @@ profiles {
 
 这种设计实现了 Write Once, Run Anywhere。
 
+> [!NOTE]
+> nextflow支持run时同时使用多个profile `nextflow run -profile p1,p2`  排序靠后profile会覆盖掉前的profile.
+
 ## 总结
 
 Nextflow 的本质是构建了一个基于 Dataflow 的分布式操作系统。
@@ -230,3 +230,4 @@ Nextflow 的本质是构建了一个基于 Dataflow 的分布式操作系统。
 - Container 是进程沙盒。
 - Channel 是 IPC（进程间通信）。
 - Executor 是内核调度器。
+
