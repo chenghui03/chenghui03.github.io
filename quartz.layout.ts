@@ -55,7 +55,6 @@ const commentsOptions = {
 const reactionsOptions = {
   provider: "waline" as const,
   options: {
-<<<<<<< HEAD
     serverURL:
       process.env.WALINE_SERVER_URL ?? "https://waline-test-gw4hzruyr-chenghui03s-projects.vercel.app/",
     reaction: toList(process.env.WALINE_REACTIONS),
@@ -63,14 +62,6 @@ const reactionsOptions = {
     locale: safeJson<Record<string, unknown>>(process.env.WALINE_LOCALE),
     dark: process.env.WALINE_DARK_SELECTOR ?? "html[data-theme='dark']",
     lang: process.env.WALINE_LANG ?? "en",
-=======
-    serverURL: process.env.WALINE_SERVER_URL ?? "",
-    reaction: toList(process.env.WALINE_REACTIONS),
-    emoji: toList(process.env.WALINE_EMOJI),
-    locale: safeJson<Record<string, unknown>>(process.env.WALINE_LOCALE),
-    dark: process.env.WALINE_DARK_SELECTOR,
-    lang: process.env.WALINE_LANG,
->>>>>>> v4
   },
 }
 
