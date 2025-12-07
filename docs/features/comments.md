@@ -150,7 +150,4 @@ WALINE_LANG="en"
 WALINE_LOCALE='{"reactionTitle": "Did you enjoy this post?"}'
 ```
 
-> [!NOTE]
-> Copy `.env.example` to `.env` to start from the working defaults above, then swap in your own IDs/URLs before building or deploying.
-
 If you want to disable the reactions bar for a single page, add `reactions: false` in its frontmatter (similar to the `comments` flag).

@@ -19,6 +19,8 @@ import Footer from "./Footer"
 import DesktopOnly from "./DesktopOnly"
 import MobileOnly from "./MobileOnly"
 import RecentNotes from "./RecentNotes"
+import HomeStatsCard from "./HomeStatsCard"
+import HomeArticleList from "./HomeArticleList"
 import Breadcrumbs from "./Breadcrumbs"
 import Comments from "./Comments"
 import Reactions from "./Reactions"
@@ -46,6 +48,8 @@ export {
   DesktopOnly,
   MobileOnly,
   RecentNotes,
+  HomeStatsCard,
+  HomeArticleList,
   NotFound,
   Breadcrumbs,
   Comments,
