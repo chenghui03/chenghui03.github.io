@@ -10,3 +10,9 @@
 - 想回顾最早的起点或跟进最新的更新？下方的文章列表会按照最近更新时间排序，并提供直接跳转链接。
 
 祝阅读愉快，也欢迎与我交流想法。
+{"title":"Home","publish":true,"created":"2025-11-08T12:27:28.000+08:00","modified":"2025-11-08T12:27:28.000+08:00","aliases":["HomePage"],"cssclasses":""}
+---
+
+# Welcome to ch blog
+
+Explore notes and experiments. View the source on [GitHub](https://github.com/chenghui03/chenghui03.github.io).
