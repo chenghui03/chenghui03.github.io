@@ -1,11 +1,83 @@
 import { PageLayout, SharedLayout } from "./quartz/cfg"
+import { QuartzComponentProps } from "./quartz/components/types"
 import * as Component from "./quartz/components"
+
+const isContentPage = (page: QuartzComponentProps) => {
+  const slug = page.fileData.slug ?? ""
+  return !(slug === "index" || slug.startsWith("tags/") || slug.endsWith("/index"))
+}
+
+const toBool = (value: string | undefined, fallback: boolean) => {
+  if (typeof value === "undefined") return fallback
+  return ["1", "true", "yes"].includes(value.toLowerCase())
+}
+
+const toList = (value: string | undefined) =>
+  value
+    ?.split(",")
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+const safeJson = <T,>(value: string | undefined): T | undefined => {
+  if (!value) return undefined
+  try {
+    return JSON.parse(value) as T
+  } catch (error) {
+    console.warn("Failed to parse JSON from configuration", error)
+    return undefined
+  }
+}
+
+const commentsOptions = {
+  provider: "giscus" as const,
+  options: {
+    repo: (process.env.GISCUS_REPO ?? "") as `${string}/${string}`,
+    repoId: process.env.GISCUS_REPO_ID ?? "",
+    category: process.env.GISCUS_CATEGORY ?? "Announcements",
+    categoryId: process.env.GISCUS_CATEGORY_ID ?? "",
+    mapping: (process.env.GISCUS_MAPPING as
+      | "url"
+      | "title"
+      | "og:title"
+      | "specific"
+      | "number"
+      | "pathname") ?? "pathname",
+    strict: toBool(process.env.GISCUS_STRICT, true),
+    reactionsEnabled: toBool(process.env.GISCUS_REACTIONS_ENABLED, true),
+    inputPosition: (process.env.GISCUS_INPUT_POSITION as "top" | "bottom" | undefined) ?? "bottom",
+    lightTheme: process.env.GISCUS_LIGHT_THEME,
+    darkTheme: process.env.GISCUS_DARK_THEME,
+    themeUrl: process.env.GISCUS_THEME_URL,
+    lang: process.env.GISCUS_LANG ?? "en",
+  },
+}
+
+const reactionsOptions = {
+  provider: "waline" as const,
+  options: {
+    serverURL: process.env.WALINE_SERVER_URL ?? "",
+    reaction: toList(process.env.WALINE_REACTIONS),
+    emoji: toList(process.env.WALINE_EMOJI),
+    locale: safeJson<Record<string, unknown>>(process.env.WALINE_LOCALE),
+    dark: process.env.WALINE_DARK_SELECTOR,
+    lang: process.env.WALINE_LANG,
+  },
+}
 
 // components shared across all pages
 export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
   header: [],
-  afterBody: [],
+  afterBody: [
+    Component.ConditionalRender({
+      component: Component.Reactions(reactionsOptions),
+      condition: isContentPage,
+    }),
+    Component.ConditionalRender({
+      component: Component.Comments(commentsOptions),
+      condition: isContentPage,
+    }),
+  ],
   footer: Component.Footer({
     links: {
       GitHub: "https://github.com/jackyzha0/quartz",

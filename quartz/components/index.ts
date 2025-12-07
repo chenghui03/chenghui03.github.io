@@ -23,6 +23,7 @@ import HomeStatsCard from "./HomeStatsCard"
 import HomeArticleList from "./HomeArticleList"
 import Breadcrumbs from "./Breadcrumbs"
 import Comments from "./Comments"
+import Reactions from "./Reactions"
 import Flex from "./Flex"
 import ConditionalRender from "./ConditionalRender"
 
@@ -52,6 +53,7 @@ export {
   NotFound,
   Breadcrumbs,
   Comments,
+  Reactions,
   Flex,
   ConditionalRender,
 }

@@ -27,11 +27,14 @@ function boolToStringBool(b: boolean): string {
 
 export default ((opts: Options) => {
   const Comments: QuartzComponent = ({ displayClass, fileData, cfg }: QuartzComponentProps) => {
-    // check if comments should be displayed according to frontmatter
+    const slug = fileData.slug ?? ""
+    const isIndexPage = slug === "index" || slug.endsWith("/index") || slug.startsWith("tags/")
     const disableComment: boolean =
       typeof fileData.frontmatter?.comments !== "undefined" &&
       (!fileData.frontmatter?.comments || fileData.frontmatter?.comments === "false")
-    if (disableComment) {
+    const isConfigComplete =
+      opts.options.repo && opts.options.repoId && opts.options.category && opts.options.categoryId
+    if (disableComment || isIndexPage || !isConfigComplete) {
       return <></>
     }
 
@@ -42,7 +45,7 @@ export default ((opts: Options) => {
         data-repo-id={opts.options.repoId}
         data-category={opts.options.category}
         data-category-id={opts.options.categoryId}
-        data-mapping={opts.options.mapping ?? "url"}
+        data-mapping={opts.options.mapping ?? "pathname"}
         data-strict={boolToStringBool(opts.options.strict ?? true)}
         data-reactions-enabled={boolToStringBool(opts.options.reactionsEnabled ?? true)}
         data-input-position={opts.options.inputPosition ?? "bottom"}
