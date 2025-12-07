@@ -1,18 +1,12 @@
 ---
-{"title":"首页","publish":true,"created":"2024-01-01T00:00:00.000+08:00","modified":"2024-01-01T00:00:00.000+08:00","cssclasses":""}
+{"publish":true,"title":"首页","created":"2024-01-01T00:00:00.000+08:00","modified":"2024-01-01T00:00:00.000+08:00","cssclasses":""}
 ---
+
 
 ## 欢迎来到 ch blog
 
 这里记录了学习、实践与思考的足迹。从数学与算法到工具和工作流，所有灵感都会沉淀成可追溯的笔记。主页下方提供站点总览、首篇文章和最新更新列表，方便快速定位到你感兴趣的内容。
 
-- 想知道站点目前累积了多少内容？查看统计卡片即可。
-- 想回顾最早的起点或跟进最新的更新？下方的文章列表会按照最近更新时间排序，并提供直接跳转链接。
-
 祝阅读愉快，也欢迎与我交流想法。
-{"title":"Home","publish":true,"created":"2025-11-08T12:27:28.000+08:00","modified":"2025-11-08T12:27:28.000+08:00","aliases":["HomePage"],"cssclasses":""}
----
-
-# Welcome to ch blog
 
 Explore notes and experiments. View the source on [GitHub](https://github.com/chenghui03/chenghui03.github.io).
