@@ -30,27 +30,26 @@ After entering both your repository and selecting the discussion category, Giscu
 
 ![[giscus-results.png]]
 
-Finally, in `quartz.layout.ts`, edit the `afterBody` field of `sharedPageComponents` to include the following options but with the values you got from above:
+Quartz reads these values from environment variables at build time, so you can keep secrets out of version control. Set the following variables in your `.env` file or CI pipeline (an `.env.example` is provided at the repo root):
 
-```ts title="quartz.layout.ts"
-afterBody: [
-  Component.Comments({
-    provider: 'giscus',
-    options: {
-      // from data-repo
-      repo: 'jackyzha0/quartz',
-      // from data-repo-id
-      repoId: 'MDEwOlJlcG9zaXRvcnkzODcyMTMyMDg',
-      // from data-category
-      category: 'Announcements',
-      // from data-category-id
-      categoryId: 'DIC_kwDOFxRnmM4B-Xg6',
-      // from data-lang
-      lang: 'en'
-    }
-  }),
-],
+```bash
+GISCUS_REPO="owner/repo"
+GISCUS_REPO_ID="your_repo_id"
+GISCUS_CATEGORY="Announcements"
+GISCUS_CATEGORY_ID="your_category_id"
+GISCUS_LANG="en"
+
+# Optional tweaks
+GISCUS_MAPPING="pathname"           # defaults to pathname
+GISCUS_STRICT="true"                # enable strict title matching
+GISCUS_REACTIONS_ENABLED="true"     # surface reactions in the thread
+GISCUS_INPUT_POSITION="bottom"      # or "top"
+GISCUS_LIGHT_THEME="light"          # custom giscus themes
+GISCUS_DARK_THEME="dark"
+GISCUS_THEME_URL="https://example.com/static/giscus"
 ```
+
+With the variables set, Quartz will automatically render the Giscus widget on content pages (non-index, non-tag pages). No layout edits are required unless you want to swap providers or change ordering.
 
 ### Customization
 
@@ -131,3 +130,27 @@ title: Comments disabled here!
 comments: false
 ---
 ```
+
+## Likes & Reactions (Waline)
+
+Quartz also includes an out-of-the-box reactions widget powered by [Waline](https://waline.js.org/). It renders only on content pages and will skip tag or index listings.
+
+1. Prepare a Waline server (for example, using Vercel, Cloudflare Workers, or your own host) and note its public URL.
+2. Provide the server details via environment variables before building the site:
+
+```bash
+WALINE_SERVER_URL="https://your-waline.example.com"
+
+# Optional settings
+WALINE_REACTIONS="👍,🎉,💡,❤️,🤔"   # custom reaction set
+WALINE_EMOJI="https://unpkg.com/@waline/emojis@1.1.0/weibo"  # comma-separated emoji CDN links
+WALINE_DARK_SELECTOR="html[data-theme='dark']"               # follow your dark selector
+WALINE_LANG="en"
+# Provide a JSON string for locale overrides if needed
+WALINE_LOCALE='{"reactionTitle": "Did you enjoy this post?"}'
+```
+
+> [!NOTE]
+> Both widgets stay hidden until the required environment variables are present. Copy `.env.example` to `.env` and populate it with your own IDs/URLs before building or deploying.
+
+If you want to disable the reactions bar for a single page, add `reactions: false` in its frontmatter (similar to the `comments` flag).
