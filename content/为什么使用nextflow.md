@@ -1,5 +1,5 @@
 ---
-{"publish":true,"created":"2025-12-03T21:58:34.000+08:00","modified":"2025-12-05T20:42:47.354+08:00","cssclasses":""}
+{"publish":true,"created":"2025-12-03T21:58:34.000+08:00","modified":"2025-12-06T14:36:42.757+08:00","cssclasses":""}
 ---
 
 在生物信息学分析中，除了生物学, 大规模、高并发、不同环境下的分布式计算也是一大难题。
@@ -27,7 +27,7 @@ $$Task = Container + Command + Resources + Input + Output$$
 
 Nextflow 的核心观点是：Pipeline 是一个数据流动的有向图。
 
-## Dataflow Programming 与隐式并行
+## Dataflow Programming 的隐式并行
 
 在传统的脚本中，并行处理往往需要显式编程（如 `xargs -P` 或手动投递任务数组），这不仅繁琐且易出错（如资源竞争）。
 
@@ -105,7 +105,7 @@ Nextflow 的执行过程并非先生成静态 DAG（有向无环图）再执行�
 > [!NOTE]
 > Nextflow 调度器不需要显式的拓扑排序算法。数据依赖关系隐式地强制了拓扑顺序。
 
-## 最小实现：模拟核心机制
+## 最小实现
 
 为了直观理解 Nextflow 的调度原理，可以用 Python 的 `Queue` 和 `ThreadPoolExecutor` 模拟其核心逻辑：异步队列 + 线程池消费。
 
@@ -185,7 +185,7 @@ for i in range(5):
 > [!NOTE]
 > 这段代码展示了 Nextflow 的本质：Channel 即 Queue，Process 即 Consumer，Executor 负责并发。
 
-## Config 与 Profile：环境解耦
+## Config 与 Profile
 
 在生产环境中，Nextflow 强调逻辑（main.nf）与配置（nextflow.config）的分离。
 
