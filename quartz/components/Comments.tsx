@@ -26,7 +26,7 @@ function boolToStringBool(b: boolean): string {
 }
 
 export default ((opts: Options) => {
-  const Comments: QuartzComponent = ({ displayClass, fileData, cfg }: QuartzComponentProps) => {
+  const Comments: QuartzComponent = ({ displayClass, fileData }: QuartzComponentProps) => {
     const slug = fileData.slug ?? ""
     const isIndexPage = slug === "index" || slug.endsWith("/index") || slug.startsWith("tags/")
     const disableComment: boolean =
@@ -37,6 +37,8 @@ export default ((opts: Options) => {
     if (disableComment || isIndexPage || !isConfigComplete) {
       return <></>
     }
+
+    const themeUrl = opts.options.themeUrl
 
     return (
       <div
@@ -51,9 +53,7 @@ export default ((opts: Options) => {
         data-input-position={opts.options.inputPosition ?? "bottom"}
         data-light-theme={opts.options.lightTheme ?? "light"}
         data-dark-theme={opts.options.darkTheme ?? "dark"}
-        data-theme-url={
-          opts.options.themeUrl ?? `https://${cfg.baseUrl ?? "example.com"}/static/giscus`
-        }
+        data-theme-url={themeUrl}
         data-lang={opts.options.lang ?? "en"}
       ></div>
     )

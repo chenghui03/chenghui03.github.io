@@ -30,13 +30,13 @@ After entering both your repository and selecting the discussion category, Giscu
 
 ![[giscus-results.png]]
 
-Quartz reads these values from environment variables at build time, so you can keep secrets out of version control. Set the following variables in your `.env` file or CI pipeline:
+Quartz reads these values from environment variables at build time, so you can keep secrets out of version control. Set the following variables in your `.env` file or CI pipeline (an `.env.example` is provided at the repo root with the live values used on this site):
 
 ```bash
-GISCUS_REPO="owner/repo"
-GISCUS_REPO_ID="your_repo_id"
-GISCUS_CATEGORY="Announcements"
-GISCUS_CATEGORY_ID="your_category_id"
+GISCUS_REPO="chenghui03/chenghui03.github.io"
+GISCUS_REPO_ID="R_kgDOQCZQLg"
+GISCUS_CATEGORY="General"
+GISCUS_CATEGORY_ID="DIC_kwDOQCZQLs4Czfik"
 GISCUS_LANG="en"
 
 # Optional tweaks
@@ -139,7 +139,7 @@ Quartz also includes an out-of-the-box reactions widget powered by [Waline](http
 2. Provide the server details via environment variables before building the site:
 
 ```bash
-WALINE_SERVER_URL="https://your-waline.example.com"
+WALINE_SERVER_URL="https://waline-test-gw4hzruyr-chenghui03s-projects.vercel.app/"
 
 # Optional settings
 WALINE_REACTIONS="👍,🎉,💡,❤️,🤔"   # custom reaction set
