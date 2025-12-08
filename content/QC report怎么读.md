@@ -1,5 +1,5 @@
 ---
-{"publish":true,"created":"2025-12-08T18:43:03.182+08:00","modified":"2025-12-08T19:26:45.873+08:00","cssclasses":""}
+{"publish":true,"created":"2025-12-08T18:43:03.182+08:00","modified":"2025-12-08T20:04:12.234+08:00","cssclasses":""}
 ---
 
 ## 测序仪：Reads 本身是否可靠？
@@ -130,7 +130,7 @@ PCA 将高维的表达矩阵投影到低维平面，旨在揭示数据中**变�
 
 ---
 
-### 小结与展望
+## 总结
 
 MultiQC 报告并非一张简单的“指标列表”，而是一个用于描绘数据生成过程中每一层可能偏差的**诊断工具**。
 
@@ -154,4 +154,4 @@ MultiQC 报告并非一张简单的“指标列表”，而是一个用于描绘
 
 ## reference
 
-[[nextflow学习手册]] nf-core rnaseq multiqc-report
+[[为什么使用nextflow]] nf-core rnaseq multiqc-report
