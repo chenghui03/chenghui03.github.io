@@ -1,5 +1,5 @@
 ---
-{"publish":true,"created":"2025-11-24T10:37:54.000+08:00","modified":"2025-12-10T13:25:20.797+08:00","tags":["BWT"],"cssclasses":""}
+{"publish":true,"created":"2025-11-24T10:37:54.000+08:00","modified":"2025-12-10T21:09:00.653+08:00","tags":["BWT"],"cssclasses":""}
 ---
 
 ## Read Mapping challenge
@@ -100,15 +100,14 @@ $$Suf(T) = \{ T[i:n] \mid 0 \le i < n \}$$
 
 后缀树是 $Suf(T)$ 的压缩 Trie（Compressed Trie）。“压缩”意味着将没有分支的单路径节点合并，使得每条边可以标记一个字符串序列。
 
-#### 直观理解
-
 既然子串是后缀的前缀，如果我们把所有后缀都插入一个 Trie，那么判断 $P$ 是否在 $T$ 中出现，就等同于判断 $P$ 是否为该 Trie 的某个前缀。这将搜索复杂度严格控制在 $O(|P|)$。
+
 
 ### 例子
 
 以文本 $T = \text{banana\$}$ 为例。
 
-其后缀包括：banana$, anana$, nana$, ana$, na$, a$, $。
+其后缀包括：banana\$, anana\$, nana\$, ana\$, na\$, a\$, \$。
 
 构建的部分后缀树（为了直观，展示逻辑结构）如下：
 

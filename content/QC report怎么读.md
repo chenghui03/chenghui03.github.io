@@ -1,5 +1,5 @@
 ---
-{"publish":true,"created":"2025-12-08T18:43:03.182+08:00","modified":"2025-12-08T20:04:12.234+08:00","cssclasses":""}
+{"publish":true,"created":"2025-12-08T18:43:03.182+08:00","modified":"2025-12-08T20:20:31.453+08:00","cssclasses":""}
 ---
 
 ## 测序仪：Reads 本身是否可靠？
@@ -84,8 +84,7 @@ FastQC 还会报告高频出现的序列。在多数情况下，高频序列能�
 > 
 > Picard 将来自相同基因组位置、且具有相同起始坐标的 Reads 标记为 PCR Duplicates。
 > 
-> 隐含代价：高 Duplication Rate 意味着我们在测序上花费了更多来获取冗余信息。在差异表达分析中，这些重复序列通常只计数一次。
-> (注意这和来自同一gene的不同read是不同的, duplicates不是表达量差异)
+> 隐含代价：高 Duplication Rate 意味着我们在测序上花费了更多来获取冗余信息。在差异表达分析中，这些重复序列通常只计数一次。(注意: duplicates和来自同一gene的不同read不同, duplicates不是表达量差异)
 
 ---
 
@@ -150,7 +149,6 @@ MultiQC 报告并非一张简单的“指标列表”，而是一个用于描绘
 > 3. **文库质量**：查看 Gene Body Coverage 和 Duplication Rate。这两个指标决定了数据的**可信度**与**深度**。
 >     
 > 4. **细节排查**：只有前三个检查出现问题时，才深入查看 GC 含量、Adapter Content 等细节图。
-
 
 ## reference
 
