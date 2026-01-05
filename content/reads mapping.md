@@ -1,5 +1,5 @@
 ---
-{"publish":true,"created":"2025-11-24T10:37:54.000+08:00","modified":"2026-01-05T17:36:18.714+08:00","tags":["BWT","algorithm"],"cssclasses":""}
+{"publish":true,"created":"2025-11-24T10:37:54.000+08:00","modified":"2026-01-05T19:08:54.798+08:00","tags":["BWT","algorithm"],"cssclasses":""}
 ---
 
 ## Read Mapping challenge
@@ -468,6 +468,7 @@ LF 映射揭示了 BWT (L列) 和 F列 之间的一一对应关系：L 列中第
 | banana$             | $   |
 | na$ban==a==         | a2  |
 | nana$b==a==         | a1  |
+
 去掉这一组的第一个字符, 这一组仍然是按照字母序排列的, 把a挪到这一组右边, 得到了对应的其他行(加亮表示).
 
 | Sorted Rotations(M) | L   |
@@ -557,10 +558,10 @@ $C[c]$ :在 F 中所有字符中，小于 c 的字符数,推论 $F[C[c]]$ �
 $Occ(c,i)$: 在 L[0..i−1] 区间中字符 c 出现的次数.
 
 $$
-\begin{align}
+\begin{align*}
 NewL = C[c] + Occ(c, L)\\
 NewR = C[c] + Occ(c, R)
-\end{align}
+\end{align*}
 $$
 ### BWT递推公式
 
