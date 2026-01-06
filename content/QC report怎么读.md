@@ -1,5 +1,5 @@
 ---
-{"publish":true,"created":"2025-12-08T18:43:03.182+08:00","modified":"2026-01-04T20:36:38.357+08:00","cssclasses":""}
+{"publish":true,"created":"2025-12-08T18:43:03.182+08:00","modified":"2026-01-06T19:00:24.535+08:00","cssclasses":""}
 ---
 
 ## 测序仪：Reads 本身是否可靠？
@@ -64,11 +64,22 @@ Mismatch Rate（比对时的碱基不匹配比例）反映了比对的精度。�
 > \end{align*}
 > $$
 > saturation必须从mapping的输出bam文件中计算得到, 通过模拟抽样不同比例read, 统计相应unique UMI可以绘制一条 saturation-n_reads 曲线, 如果该曲线最后的趋势相对平缓,则说明继续测序深度对于得到更多unique UMI无太大贡献. 当saturation接近1时,说明绝大多数read都是在重复测量.
+> 
 > 仅仅从count matrix不足以计算saturation.
 > 举例来说
 > - PCR重复扩增UMI在count matrix只会被计数一次
 > - 未比对到gene的read的信息也被丢弃了,
 > - 多次比对和其他异常比对到genome的read也会被丢弃
+
+
+> [!QUESTION] 总read数量和UMI数量能否得到saturation plot
+> 在QC report提供的是总read数量和总UMI数量, 但是由于不知道每个UMI相应的read占比(UMI对应read的分布情况) 这不足以重新绘制saturation plot
+> 除非假定例如UMI的分布, 例如UMI对应read服从均匀分布, 但是read扩增具有偏好性, 一般不满足均匀分布
+> 
+> 但是可以计算相应的saturation rate, 由于分布未知, 无法推测继续增加测序深度是否能够继续捕捉更多分子UMI
+> 存在两种极端情况:
+> 1. UMI对应read数量服从均匀分布, 增加测序深度将会继续以斜率增加分子UMI数量
+> 2. UMI对应read数量极端不均衡, 继续增加测序深度收益非常小, 甚至为0
 
 ---
 
