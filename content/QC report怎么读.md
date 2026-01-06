@@ -1,5 +1,5 @@
 ---
-{"publish":true,"created":"2025-12-08T18:43:03.182+08:00","modified":"2026-01-06T19:00:24.535+08:00","cssclasses":""}
+{"publish":true,"created":"2025-12-08T18:43:03.182+08:00","modified":"2026-01-06T21:30:11.813+08:00","cssclasses":""}
 ---
 
 ## 测序仪：Reads 本身是否可靠？
@@ -57,12 +57,29 @@ Mismatch Rate（比对时的碱基不匹配比例）反映了比对的精度。�
 > - Unique/Multi-mapping：Unique Mapping 应占主导地位。
 >     
 
+---
+
+## 文库构建：是否过度扩增与结构异常？
+
+从比对结果中，我们可以反推文库构建过程的健康程度。这部分噪声主要与 PCR 扩增和片段化有关，由 Picard 或 FastQC 的部分指标揭示。
+
+### Duplication Rate/duplication rate
+
+Duplication Rate 衡量的是文库中来自同一个RNA分子重复序列的比例。在 RNA-seq 中，这通常是由于文库复杂度不足（起始 RNA 量过低）或 PCR 循环过多导致的。
+
+$$
+\begin{align*}
+\text{duplication rate} = \frac{\text{Number of Duplicate Reads}}{\text{Total Mapped Reads}}  = \\
+\text{saturation rate} = 1 - \frac{\text{n unique UMI}}{\text{n total valid reads}}
+
+\end{align*}
+$$
+> [!NOTE]
+> 重复序列本身不会带来错误信息，但它们会降低测序的有效信息量。
+
+高达 $70\%$ 以上的重复率往往意味着文库量严重不足或扩增过度，应当被视为不合格。适中的重复率（如 $20\%-50\%$）在真核生物样本中较为常见。
+
 > [!NOTE] 测序深度是否足够? 
-> $$
-> \begin{align*}
-> \text{saturation} = 1 - \frac{\text{n unique UMI}}{\text{n total valid reads}}
-> \end{align*}
-> $$
 > saturation必须从mapping的输出bam文件中计算得到, 通过模拟抽样不同比例read, 统计相应unique UMI可以绘制一条 saturation-n_reads 曲线, 如果该曲线最后的趋势相对平缓,则说明继续测序深度对于得到更多unique UMI无太大贡献. 当saturation接近1时,说明绝大多数read都是在重复测量.
 > 
 > 仅仅从count matrix不足以计算saturation.
@@ -81,20 +98,9 @@ Mismatch Rate（比对时的碱基不匹配比例）反映了比对的精度。�
 > 1. UMI对应read数量服从均匀分布, 增加测序深度将会继续以斜率增加分子UMI数量
 > 2. UMI对应read数量极端不均衡, 继续增加测序深度收益非常小, 甚至为0
 
----
-
-## 文库构建：是否过度扩增与结构异常？
-
-从比对结果中，我们可以反推文库构建过程的健康程度。这部分噪声主要与 PCR 扩增和片段化有关，由 Picard 或 FastQC 的部分指标揭示。
-
-### Duplication Rate
-
-Duplication Rate 衡量的是文库中来自同一个RNA分子重复序列的比例。在 RNA-seq 中，这通常是由于文库复杂度不足（起始 RNA 量过低）或 PCR 循环过多导致的。
-
-> [!NOTE]
-> 重复序列本身不会带来错误信息，但它们会降低测序的有效信息量。
-
-高达 $70\%$ 以上的重复率往往意味着文库量严重不足或扩增过度，应当被视为不合格。适中的重复率（如 $20\%-50\%$）在真核生物样本中较为常见。
+> [!NOTE] 不使用UMI测序技术 的saturation rate
+> 在不使用UMI的测序技术里(例如bulkRNAseq, 起始量高) 我们使用mapping到相同位置的reads视为duplicate, 因为无法根据UMI区分表达量差异和PCR扩增差异, duplication rate过高是一件坏事.
+> 在使用UMI的测序技术(例如scRNAseq, 起始量低信号依赖PCR扩增)因为可以区分真实分子和PCR扩增产物, 这里我们可以真实区分来自同一个分子的duplicate, 从而进行判断UMI分子池子是否被捞干净: 继续增加测序深度, UMI的上升情况 
 
 ### Insert Size Distribution
 
@@ -108,7 +114,7 @@ FastQC 还会报告高频出现的序列。在多数情况下，高频序列能�
 > 
 > Picard 将来自相同基因组位置、且具有相同起始坐标的 Reads 标记为 PCR Duplicates。
 > 
-> 隐含代价：高 Duplication Rate 意味着我们在测序上花费了更多来获取冗余信息。在差异表达分析中，这些重复序列通常只计数一次。(注意: duplicates和来自同一gene的不同read不同, duplicates不是表达量差异)
+> 隐含代价：高 Duplication Rate 意味着我们在测序上花费了更多来获取冗余信息。在差异表达分析中，这些重复序列通常只计数一次。(注意: duplicates和来自同一gene的不同read不同, duplicates对于表达量差异没有贡献)
 
 ---
 
@@ -156,6 +162,39 @@ PCA 将高维的表达矩阵投影到低维平面，旨在揭示数据中变异�
 ## 总结
 
 MultiQC 报告并非一张简单的“指标列表”，而是一个用于描绘数据生成过程中每一层可能偏差的诊断工具。
+
+### read按照层次分类
+
+每个read读段按照 if valid CellID/if high quality/if unique mapped/if annotated/if duplicated 可以进行如下分类
+```mermaid
+graph TD
+    %% Level 1: Raw Input
+    A[Total Reads] --> B[Valid CID Reads]
+    A --> C(Invalid CID Reads)
+
+    %% Level 2: Quality Control
+    B --> D[Clean Reads]
+    B --> E(Non-Relevant Short Reads)
+    B --> F(Discarded MID Reads)
+
+    %% Level 3: Genome Mapping
+    D --> G[Uniquely Mapped Reads]
+    D --> H(Multi-Mapped Reads)
+    D --> I(Unmapped Reads)
+
+    %% Level 4: Gene Annotation
+    G --> J[Annotated Reads]
+    G --> K(Unannotated Reads)
+
+    %% Level 5: Deduplication / UMI Counting
+    J --> L[Unique Reads]
+    J --> M(Sequencing Saturation / Duplicates)
+    
+    %% Styling
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style J fill:#bbf,stroke:#333,stroke-width:2px
+    style L fill:#9f9,stroke:#333,stroke-width:4px
+```
 
 
 > [!NOTE] TODO
