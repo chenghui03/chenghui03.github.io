@@ -1,5 +1,5 @@
 ---
-{"publish":true,"created":"2025-12-08T18:43:03.182+08:00","modified":"2026-01-06T21:30:11.813+08:00","cssclasses":""}
+{"publish":true,"created":"2025-12-08T18:43:03.182+08:00","modified":"2026-01-07T16:33:14.476+08:00","cssclasses":""}
 ---
 
 ## 测序仪：Reads 本身是否可靠？
@@ -78,6 +78,10 @@ $$
 > 重复序列本身不会带来错误信息，但它们会降低测序的有效信息量。
 
 高达 $70\%$ 以上的重复率往往意味着文库量严重不足或扩增过度，应当被视为不合格。适中的重复率（如 $20\%-50\%$）在真核生物样本中较为常见。
+
+> [!NOTE] 不同层次的saturation rate
+> 在valid CID, pass QC, unique mapped, annotated reads上做saturation rate, 更接近于gene表达矩阵层面
+> 在valid CID, pass QC, unique mapped, 更接近于测序层面
 
 > [!NOTE] 测序深度是否足够? 
 > saturation必须从mapping的输出bam文件中计算得到, 通过模拟抽样不同比例read, 统计相应unique UMI可以绘制一条 saturation-n_reads 曲线, 如果该曲线最后的趋势相对平缓,则说明继续测序深度对于得到更多unique UMI无太大贡献. 当saturation接近1时,说明绝大多数read都是在重复测量.
