@@ -1,6 +1,32 @@
 ---
-{"publish":true,"created":"2025-12-08T18:43:03.182+08:00","modified":"2026-01-07T16:33:14.476+08:00","cssclasses":""}
+publish: true
+created: 2026-01-11T15:02:25.000+08:00
+modified: 2026-03-05T20:17:05.958+08:00
+cssclasses: ""
 ---
+
+测序文件fastq大小
+
+估计测序文件大小
+$$
+测序文件大小 = 测序read数量 * read长度 * 单端双测序系数 * 系数(0.5 - 0.8)
+$$
+这里的系数考虑到了
+- fastq需要同时存储碱基序列ATCG和相应质量，以及相应fastq头
+- 常用算法压缩率
+
+例如 3 \* 10^8 的双端测序150bp 总碱基数量为90Gb，测序文件大小约为72GB
+
+估计测序成本
+$$
+测序文件大小 = 测序read数量 * read长度 * 单端双测序系数 * 系数(< 10/GigaBase)
+$$
+
+![](https://www.genome.gov/sites/default/files/inline-images/2022_Sequencing_cost_per_Mb.jpg)
+
+
+> [!NOTE]
+> mega giga tera 分别对应 million, billion, trillion
 
 ## 测序仪：Reads 本身是否可靠？
 
@@ -82,6 +108,8 @@ $$
 > [!NOTE] 不同层次的saturation rate
 > 在valid CID, pass QC, unique mapped, annotated reads上做saturation rate, 更接近于gene表达矩阵层面
 > 在valid CID, pass QC, unique mapped, 更接近于测序层面
+^saturation-rate-diff-level
+
 
 > [!NOTE] 测序深度是否足够? 
 > saturation必须从mapping的输出bam文件中计算得到, 通过模拟抽样不同比例read, 统计相应unique UMI可以绘制一条 saturation-n_reads 曲线, 如果该曲线最后的趋势相对平缓,则说明继续测序深度对于得到更多unique UMI无太大贡献. 当saturation接近1时,说明绝大多数read都是在重复测量.
@@ -91,7 +119,6 @@ $$
 > - PCR重复扩增UMI在count matrix只会被计数一次
 > - 未比对到gene的read的信息也被丢弃了,
 > - 多次比对和其他异常比对到genome的read也会被丢弃
-
 
 > [!QUESTION] 总read数量和UMI数量能否得到saturation plot
 > 在QC report提供的是总read数量和总UMI数量, 但是由于不知道每个UMI相应的read占比(UMI对应read的分布情况) 这不足以重新绘制saturation plot
